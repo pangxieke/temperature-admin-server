@@ -1,0 +1,16 @@
+go_env: "dev"
+logs:
+  file: "../logs/temp-admin.log"
+
+mysql:
+  uri: "root:password@tcp(localhost:3306)/temperature?charset=utf8&autocommit=true&timeout=3s"
+  debug: true
+
+oss:
+  endpoint: "https://oss-cn-shenzhen.aliyuncs.com"
+  access_key_id: "***"
+  access_key_secret: "***"
+  bucket: "*"
+
+redis:
+  address: "127.0.0.1:7001,127.0.0.1:7002"

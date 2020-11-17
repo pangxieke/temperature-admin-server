@@ -1,0 +1,21 @@
+version: '3.1'
+services:
+  app:
+    image: registry.cn-shenzhen.aliyuncs.com/***/temp_back:_dev.v0.0.1
+    ports:
+      - 19980:19980
+    environment:
+      - "GO_ENV=test" # test | production
+      - "MYSQL_URI=root:password@tcp(localhost:3306)/temperature?charset=utf8&autocommit=true&timeout=3s"
+      - "MYSQL_DEBUG=true"
+      - "LOGS_FILE=/data/logs/temp-admin/temp-admin.log"
+    container_name: temp-admin
+    restart: always
+    volumes:
+      - /data/logs/temp-admin:/data/logs/temp-admin
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+networks:
+  default:
+    external:
+      name: test_default

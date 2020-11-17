@@ -1,0 +1,738 @@
+openapi: "3.0.9"
+info:
+  title: 体温监测后台服务
+  description: |
+    版本：v1.0
+
+    #### 命名风格
+
+    JSON 字段采用`小驼峰`风格，URL 采用`下划线分隔`风格
+
+    #### 参数
+
+    参数分`Query Parameter` 和 `Request Body` 两种，前者主要用于 GET 请求，以URL Query Parameter 格式传入；后者主要用于POST, PUT, PATCH 请求，以 JSON 格式传入 BODY 里。
+
+    #### 响应
+
+    响应分两部分：HTTP 状态码、BODY。状态码符合HTTP协议标准，BODY 通常使用JSON格式。
+
+    请求成功的情况下使用的状态码有：
+
+    | 状态码 | 说明   |
+    | ------ | ------ |
+    | 200    | 成功   |
+    | 201    | 已创建 |
+    | 204    | 无内容 |
+
+    失败的状态码使用了：
+
+    | 状态码 | 说明                     |
+    | ------ | ------------------------ |
+    | 400    | 请求体不正确，如格式不对 |
+    | 401    | 未鉴权                   |
+    | 403    | 操作未授权               |
+    | 404    | 资源未找到               |
+    | 422    | 无法操作                 |
+
+    错误的状态码通常带有错误说明在 body 里，格式如下：
+
+    ```json
+    {
+        "code": 342,
+        "message": "...."
+    }
+    ```
+
+    | 字段名  | 说明           | 必出现 |
+    | ------- | -------------- | ------ |
+    | code    | 错误代码       | 否     |
+    | message | 错误的详细说明 | 是     |
+
+  contact:
+    email:
+  version: "v1"
+servers:
+  - description: 开发环境
+    url: 'http://***:19980/api/back'
+
+
+paths:
+  /login:
+    post:
+      tags:
+        - 账户管理
+      summary: 登录
+      description: 登录
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        200:
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/LoginReturn'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+  /register:
+    put:
+      tags:
+        - 账户管理
+      summary: 注册
+      description: 注册
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreAdd'
+      responses:
+        200:
+          $ref: '#/components/responses/NoContent'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+  /store:
+    post:
+      tags:
+        - 商户管理
+      summary: 修改商户信息
+      description: 修改商户信息
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditStore'
+      responses:
+        200:
+          $ref: '#/components/responses/NoContent'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - authorization: []
+    get:
+      tags:
+        - 商户管理
+      summary: 商户列表
+      description: 商户列表
+      parameters:
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        200:
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Paging'
+                  - properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StoreList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - authorization: []
+  /store/info:
+    get:
+      tags:
+        - 商户管理
+      summary: 商户详情
+      description: 商户详情
+      responses:
+        200:
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StoreList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - authorization: []
+  /device:
+    get:
+      tags:
+        - 设备管理
+      summary: 设备列表
+      description: 设备列表
+      parameters:
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        200:
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Paging'
+                  - properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/DeviceList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - authorization: []
+    post:
+      tags:
+        - 设备管理
+      summary: 设备绑定
+      description: 设备绑定
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceBind'
+      responses:
+        200:
+          $ref: '#/components/responses/NoContent'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - authorization: []
+  /device/{sn}:
+    delete:
+      tags:
+        - 设备管理
+      summary: 设备解绑
+      description: 设备解绑
+      parameters:
+        - $ref: '#/components/parameters/SN'
+      responses:
+        200:
+          $ref: '#/components/responses/NoContent'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - authorization: []
+  /user:
+    get:
+      tags:
+        - 用户管理
+      summary: 用户列表
+      description: 人员列表
+      parameters:
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        200:
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Paging'
+                  - properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - authorization: []
+    post:
+      tags:
+        - 用户管理
+      summary: 修改用户
+      description: 修改用户
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInfo'
+      responses:
+        200:
+          $ref: '#/components/responses/NoContent'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - authorization: []
+  /user/{id}:
+    delete:
+      tags:
+        - 用户管理
+      summary: 删除用户
+      description: 删除用户
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        200:
+          $ref: '#/components/responses/NoContent'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - authorization: []
+  /temp:
+    get:
+      tags:
+        - 体温数据
+      summary: 体温数据列表
+      description: 体温数据列表
+      parameters:
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/StartTime'
+        - $ref: '#/components/parameters/EndTime'
+        - $ref: '#/components/parameters/Num'
+        - $ref: '#/components/parameters/Name'
+        - $ref: '#/components/parameters/IdNum'
+        - $ref: '#/components/parameters/UserNo'
+      responses:
+        200:
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Paging'
+                  - properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TempList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - authorization: []
+components:
+  parameters:
+    Offset:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        default: 0
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 24
+    ID:
+      name: id
+      in: path
+      schema:
+        type: number
+        example: 123
+      required: true
+    StartTime:
+      name: start_time
+      in: query
+      schema:
+        type: integer
+        default: 0
+        example: 1515064942
+    EndTime:
+      name: end_time
+      in: query
+      schema:
+        type: integer
+        example: 1515064942
+    Num:
+      name: num
+      in: query
+      schema:
+        type: number
+        default: 0
+        example: 36.5
+    Name:
+      name: name
+      in: query
+      schema:
+        type: string
+        default: ""
+        example: 王小二
+    IdNum:
+      name: id_num
+      in: query
+      schema:
+        type: string
+        default: ""
+        example: 42900519771010
+    UserNo:
+      name: user_no
+      in: query
+      schema:
+        type: string
+        default: ""
+        example: 1351008
+    SN:
+      name: sn
+      in: query
+      schema:
+        type: string
+        example: IM04WY0030132018040
+  schemas:
+    Paging:
+      properties:
+        total:
+          type: integer
+          description: 符合查询条件的总数
+          example: 1
+        offset:
+          type: integer
+          description: 当前结果的索引偏移
+          example: 0
+      required:
+        - total
+        - offset
+    Error:
+      properties:
+        message:
+          type: string
+          description: 错误消息
+        code:
+          type: integer
+          description: 错误码，主要用于提示方案
+      required:
+        - message
+    Login:
+      properties:
+        username:
+          type: string
+          description: 用户名
+          example: admin
+        password:
+          type: string
+          description: 密码
+          example: e10adc3949ba59abbe56e057f20f883e
+      required:
+        - username
+        - password
+    LoginReturn:
+      properties:
+        username:
+          type: string
+          description: 用户名
+          example: admin
+        id:
+          type: integer
+          description: 商户ID
+          example: 123
+        token:
+          type: string
+          description: token授权
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+        role:
+          type: integer
+          description: 角色（0：超级管理员，1：普通用户）
+          example: 1
+      required:
+        - token
+        - role
+    StoreAdd:
+      properties:
+        username:
+          type: string
+          description: 用户名
+          example: admin
+        password:
+          type: string
+          description: 密码
+          example: e10adc3949ba59abbe56e057f20f883e
+        name:
+          type: string
+          description: 商户名称
+          example: 云之梦
+        address:
+          type: string
+          description: 公司地址
+          example: 南山区
+        tel:
+          type: string
+          description: 联系电话
+          example: 0755-266655656
+      required:
+        - username
+        - password
+        - name
+        - address
+        - tel
+    EditStore:
+      properties:
+        password:
+          type: string
+          description: 密码
+          example: e10adc3949ba59abbe56e057f20f883e
+        id:
+          type: integer
+          description: 商户ID
+          example: 123
+        name:
+          type: string
+          description: 商户名称
+          example: 云之梦
+        address:
+          type: string
+          description: 公司地址
+          example: 南山区
+        tel:
+          type: string
+          description: 联系电话
+          example: 0755-266655656
+      required:
+        - name
+        - address
+        - tel
+    StoreList:
+      properties:
+        id:
+          type: integer
+          description: 商户ID
+          example: 122
+        name:
+          type: string
+          description: 商户名称
+          example: 云之梦
+        address:
+          type: string
+          description: 公司地址
+          example: 南山区
+        tel:
+          type: string
+          description: 联系电话
+          example: 0755-266655656
+      required:
+        - id
+        - name
+        - address
+        - tel
+    DeviceList:
+      properties:
+        sn:
+          type: string
+          description: 序列号
+          example: IM04WY00301320180403
+        created_at:
+          type: integer
+          description: 注册时间
+          example: 1575388800
+        store_id:
+          type: integer
+          description: 商户ID
+          example: 123
+        store_name:
+          type: string
+          description: 商户名称
+          example: 云之梦
+        status:
+          type: integer
+          description: 状态（1：正常使用，2：）
+          example: 1
+        remake:
+          type: string
+          description: 备注信息
+          example: 5楼大门
+      required:
+        - sn
+        - created_at
+        - status
+    DeviceBind:
+      properties:
+        sn:
+          type: string
+          description: 序列号
+          example: IM04WY00301320180403
+        remake:
+          type: string
+          description: 备注信息
+          example: 5楼大门
+      required:
+        - sn
+        - remake
+    UserList:
+      properties:
+        id:
+          type: integer
+          description: 用户id
+          example: 1323
+        name:
+          type: string
+          description: 姓名
+          example: 张三
+        age:
+          type: integer
+          description: 年龄
+          example: 24
+        id_num:
+          type: string
+          description: 身份证号
+          example: 4304126559996511
+        tel:
+          type: string
+          description: 手机号
+          example: 18689985541
+        department:
+          type: string
+          description: 部门
+          example: 技术部
+        photo:
+          type: string
+          description: 照片
+          example: https://pics3.baidu.com/feed/8644ebf81a4c510f83dd9ce53ab56b2bd52aa522.jpeg
+        created_at:
+          type: integer
+          description: 注册时间
+          example: 1575388800
+      required:
+        - id
+        - name
+        - mobile
+        - photo
+        - created_at
+    UserInfo:
+      properties:
+        id:
+          type: integer
+          description: 用户id
+          example: 1323
+        name:
+          type: string
+          description: 姓名
+          example: 张三
+        age:
+          type: integer
+          description: 年龄
+          example: 24
+        id_num:
+          type: string
+          description: 身份证号
+          example: 4304126559996511
+        tel:
+          type: string
+          description: 手机号
+          example: 18689985541
+        department:
+          type: string
+          description: 部门
+          example: 技术部
+      required:
+        - id
+        - name
+        - tel
+    TempList:
+      properties:
+        id:
+          type: integer
+          description: 采集id
+          example: 1323
+        name:
+          type: string
+          description: 姓名
+          example: 张三
+        company:
+          type: string
+          description: 公司名称
+          example: 云之梦
+        tel:
+          type: string
+          description: 联系电话
+          example: 18689985541
+        created_at:
+          type: integer
+          description: 采集时间
+          example: 1575388800
+        num:
+          type: number
+          description: 体温
+          example: 36.8
+        type:
+          type: integer
+          description: 是已注册（0：未注册，1：已注册）
+          example: 0
+        sn:
+          type: string
+          description: 设备序列号
+          example: IM04WY00301320180403
+        user_no:
+          type: string
+          description: 用户人脸编号
+          example: 13568
+        id_num:
+          type: string
+          description: 身份证
+          example: 4304126559996511
+        face_image:
+          type: string
+          description: 测温照片
+          example: https://pics3.baidu.com/feed/8644ebf81a4c510f83dd9ce53ab56b2bd52aa522.jpeg
+      required:
+        - id
+        - name
+        - mobile
+        - temp
+        - created_at
+  responses:
+    NoContent:
+      description: 操作成功
+    Unauthorized:
+      description: 鉴权失败
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Authorization is invalid
+    Forbidden:
+      description: 权限不足
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Operation is forbidden
+    NotFound:
+      description: 找不到资源
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: 资源不存在
+    UnprocessableEntity:
+      description: 无法处理的请求
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 1
+            message: 操作失败的具体原因
+  securitySchemes:
+    authorization:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes
